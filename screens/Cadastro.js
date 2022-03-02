@@ -5,6 +5,7 @@ import { CheckBox } from 'react-native-elements/dist/checkbox/CheckBox';
 import { Input } from 'react-native-elements/dist/input/Input';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TextInputMask } from 'react-native-masked-text';
+import { usuarioService } from '../services/UsuarioService'
 
 
 import styles from '../style/mainStyle';
@@ -15,139 +16,174 @@ export default function Cadastro({navigation}) {
     
   //inicia uma variável email com o state Null ou qualquer outro valor
   //e o segundo é o método que altera a variável
-  const [email, setEmail] = useState(null);
-  const [nome, setNome] = useState(null);
-  const [cpf, setCpf] = useState(null);
-  const [numero, setNumero] = useState(null);
-  const [isSelected, setSelected] = useState(false)
 
-  //criação da validação
-  const [errorEmail, setErrorEmail] = useState(null);
-  const [errorNome, setErrorNome] = useState(null);
-  const [errorCpf, setErrorCpf] = useState(null);
-  const [errorNumero, setErrorNumero] = useState(null);
-
-
-  //salvar dados colocados no INPUT
-  let cpfField = null
-  let telefoneField = null
-
-    const validar = () => {
-        let error = false;
+    const [email, setEmail] = useState(null)
+    const [nome, setNome] = useState(null)
+    const [cpf, setCpf] = useState(null)
+    const [senha, setSenha] = useState(null)
+    const [telefone, setTelefone] = useState(null)
+    const [isSelected, setSelected] = useState(false)
+    const [errorEmail, setErrorEmail] = useState(null)
+    const [errorNome, setErrorNome] = useState(null)
+    const [errorCpf, setErrorCpf] = useState(null)
+    const [errorTelefone, setErrorTelefone] = useState(null)
+    const [errorSenha, setErrorSenha] = useState(null)
+    const [isLoading, setLoading] = useState(false)
+  
+    const [visibleDialog, setVisibleDialog] = useState(false);
+    const [titulo, setTitulo] = useState(null)
+    const [mensagem, setMensagem] = useState(null)
+    const [tipo, setTipo] = useState(null)
+  
+    let cpfField = null
+    let telefoneField = null
+  
+    const showDialog = (titulo, mensagem, tipo) => {
+      setVisibleDialog(true)
+      setTitulo(titulo)
+      setMensagem(mensagem)
+      setTipo(tipo)
+    }
+  
+    const hideDialog = (status) => {
+      setVisibleDialog(status)
+    }
     
-        const re = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
-
-        if ( !re.test(String(email).toLowerCase()) ) {
-            setErrorEmail('Preencha seu Email corretamente')
-            error = true;
-        }
-        if ( !cpfField.isValid() ) {
-            setErrorCpf('Preencha seu CPF Corretamente')
-            error = true;
-        }
-        if (  !telefoneField.isValid() ){
-            setErrorNumero('Preencha seu telefone corretamente')
-            error = true;
-        }
-        return !error;
+    const validar = () => {
+      let error = false
+      setErrorEmail(null)
+      setErrorCpf(null)
+      setErrorSenha(null)
+      
+      const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      if (!re.test(String(email).toLowerCase())){
+        setErrorEmail("Preencha seu e-mail corretamente")
+        error = true
+      }
+      if (!cpfField.isValid()){
+        setErrorCpf("Preencha seu CPF corretamente")
+        error = true
+      }
+      if (telefone == null){
+        setErrorTelefone("Preencha seu telefone corretamente")
+        error = true
+      }
+      if (senha == null){
+        setErrorSenha("Preencha a senha")
+        error = true
+      }
+      return !error
     }
-
-    /* criação da função salvar */
+  
     const salvar = () => {
-        if(validar()) {
-            console.log('salvou');
+        if (validar()){
+          setLoading(true)
+          
+          let data = {
+            email: email,
+            cpf: cpf,
+            nome: nome,
+            telefone: telefone,
+            senha: senha
+          }
+          
+          UsuarioService.cadastrar(data)
+          .then((response) => {
+            setLoading(false)
+            const titulo = (response.data.status) ? "Sucesso" : "Erro"
+            showDialog(titulo, response.data.mensagem, "SUCESSO")
+            //Alert.alert(titulo, response.data.mensagem)          
+          })
+          .catch((error) => {
+            setLoading(false)
+            showDialog("Erro","Houve um erro inesperado", "ERRO")
+            //Alert.alert("Erro", "Houve um erro inesperado")
+          })
         }
     }
-
-  return (
-    <KeyboardAvoidingView 
-      keyboardVerticalOffset={90}
+  
+    return (
+      <KeyboardAvoidingView
       behavior={Platform.OS == "ios" ? "padding" : "height"}
-      style={[styles.container, specificStyle.specificContainer] } >
-      <ScrollView style={{width: "100%"}}>
-      <Text h3>Cadastre-se</Text>
-        <Input placeholder=' E-mail' 
-              keyboardType='email-address'
-              onChangeText={value => { 
-                  setEmail(value),
-                  setErrorEmail(null)
-                }}
-        />
-        <Text style={styles.errorMessage}>{errorEmail}</Text>
-
-        <Input placeholder=' Nome' 
-              keyboardType='name'
-              onChangeText={value => setNome(value)}
-        />
-        <Text style={styles.errorMessage}>{errorNome}</Text>
-
-       {/*  <Input placeholder=' CPF' 
-              keyboardType='number-pad'
-              onChangeText={value => {
-                  setCpf(value),
-                  setErrorCpf(null)
-                }}
-              errorMessage={errorCpf}
-        /> */}
-
+      style={[styles.container, specificStyle.specificContainer]}
+      keyboardVerticalOffset={80}>
+        <ScrollView style={{width: "100%"}}>
+        <Text h3>Cadastre-se</Text>
+        <Input
+          placeholder="E-mail"
+          onChangeText={value => {
+              setEmail(value)
+              setErrorEmail(null)
+          }}
+          keyboardType="email-address"
+          errorMessage={errorEmail}        
+          />
+      
+  <Input
+          placeholder="Nome"
+          onChangeText={value => setNome(value)}
+          errorMessage={errorNome}
+          />
+      
       <View style={styles.containerMask}>
-        <TextInputMask
-             placeholder="CPF"
-             type={'cpf'}
-             value={cpf}
-             onChangeText={value => {
-               setCpf(value)
-               setErrorCpf(null)
-             }}
-             keyboardType="number-pad"
-             returnKeyType="done"      
-             style={styles.maskedInput}
-             ref={(ref) => cpfField = ref} 
-        />
+      <TextInputMask
+        placeholder="CPF"
+        type={'cpf'}
+        value={cpf}
+        onChangeText={value => {
+          setCpf(value)
+          setErrorCpf(null)
+        }}
+        keyboardType="number-pad"
+        returnKeyType="done"      
+        style={styles.maskedInput}
+        ref={(ref) => cpfField = ref}
+        />      
       </View>
       <Text style={styles.errorMessage}>{errorCpf}</Text>
-        
-{/* 
-        <Input placeholder=' Telefone' 
-              keyboardType='number-pad'
-              onChangeText={value => setNumero(value)}
-              errorMessage={errorNumero}
-        />
- */}
-        <View style={styles.containerMask}>
-            <TextInputMask
-                type={'cel-phone'}
-                options={{
-                  maskType: 'BRL',
-                  withDDD: true,
-                  dddMask: '(99) '
-                }}
-                style={styles.maskedInput}
-                placeholder="(DDD) Telefone"
-                value={numero}
-                onChangeText={value => {
-                    setNumero(value),
-                    setErrorNumero(null)
-                }}
-                returnKeyType='done'
-                keyboardType='number-pad'
-                ref={(ref) => telefoneField = ref} 
-            />
-        </View>
-        <Text style={styles.errorMessage}>{errorNumero}</Text>
-
-        <CheckBox
-            title="Eu aceito os termos de uso"
-            checkedIcon="check"
-            uncheckedIcon="square-o"
-            checkedColor="green"
-            uncheckedColor="red"   
-            checked={isSelected}        
-            onPress={() => { setSelected(!isSelected)}}
-            />
-
-
-        <Button
+  
+      <View style={styles.containerMask}>
+      <TextInputMask
+        placeholder="Telefone"
+        type={'cel-phone'}
+        options={{
+          maskType: 'BRL',
+          withDDD: true,
+          dddMask: '(99) '
+        }}
+        value={telefone}
+        onChangeText={value => {
+            setTelefone(value)
+            setErrorTelefone(null)
+          }
+        }
+        keyboardType="phone-pad"  
+        returnKeyType="done"    
+        style={styles.maskedInput}
+        ref={(ref) => telefoneField = ref}
+        />      
+      </View>
+      <Text style={styles.errorMessage}>{errorTelefone}</Text>
+  
+      <Input
+          placeholder="Senha"
+          onChangeText={value => setSenha(value)}
+          errorMessage={errorSenha}
+          secureTextEntry={true}
+          />
+              
+      <CheckBox 
+          title="Eu aceito os termos de uso"
+          checkedIcon="check"
+          uncheckedIcon="square-o"
+          checkedColor="green"
+          uncheckedColor="red"
+          checked={isSelected}
+          onPress={() => setSelected(!isSelected)}
+      />
+      
+      {!isLoading && 
+        < Button
                 title="Salvar"
                 buttonStyle={{
                   backgroundColor: 'black',
@@ -163,10 +199,16 @@ export default function Cadastro({navigation}) {
                 titleStyle={{ fontWeight: 'bold' }}
                 onPress={() => salvar()}
         />
+      }
+
+        { visibleDialog && 
+          <CustomDialog titulo={titulo} mensagem={mensagem} tipo={tipo} visible={visibleDialog} onClose={hideDialog}></CustomDialog>
+        } 
       </ScrollView>
     </KeyboardAvoidingView>
   );
-}
+      }       
+
 
 const specificStyle = StyleSheet.create({
   specificContainer: {
