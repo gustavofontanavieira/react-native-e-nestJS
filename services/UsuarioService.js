@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import axios from "axios"
 import Config from "../util/Config"
 
-class  UsuarioService{
+class UsuarioService{
     
     async cadastrar(data){
         return axios({
@@ -51,7 +51,8 @@ class  UsuarioService{
             return Promise.reject(error)
         })
     }
+    
 }
 
-const usuarioService = new UsuarioService()
-export default UsuarioService;
+let usuarioService = new UsuarioService()
+export default usuarioService

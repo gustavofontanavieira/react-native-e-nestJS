@@ -5,7 +5,8 @@ import { CheckBox } from 'react-native-elements/dist/checkbox/CheckBox';
 import { Input } from 'react-native-elements/dist/input/Input';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TextInputMask } from 'react-native-masked-text';
-import { usuarioService } from '../services/UsuarioService'
+
+import usuarioService  from '../services/UsuarioService.js'
 
 
 import styles from '../style/mainStyle';
@@ -87,17 +88,17 @@ export default function Cadastro({navigation}) {
             senha: senha
           }
           
-          UsuarioService.cadastrar(data)
+          usuarioService.cadastrar(data)
           .then((response) => {
             setLoading(false)
             const titulo = (response.data.status) ? "Sucesso" : "Erro"
-            showDialog(titulo, response.data.mensagem, "SUCESSO")
-            //Alert.alert(titulo, response.data.mensagem)          
+/*             console.log(titulo, response.data.mensagem, "SUCESSO") */
+            Alert.alert(titulo, response.data.mensagem)          
           })
           .catch((error) => {
             setLoading(false)
-            showDialog("Erro","Houve um erro inesperado", "ERRO")
-            //Alert.alert("Erro", "Houve um erro inesperado")
+            /* console.log("Erro","Houve um erro inesperado", "ERRO") */
+            Alert.alert("Erro", "Houve um erro inesperado")
           })
         }
     }
@@ -157,7 +158,7 @@ export default function Cadastro({navigation}) {
             setErrorTelefone(null)
           }
         }
-        keyboardType="phone-pad"  
+        keyboardType="number-pad"  
         returnKeyType="done"    
         style={styles.maskedInput}
         ref={(ref) => telefoneField = ref}
@@ -182,6 +183,10 @@ export default function Cadastro({navigation}) {
           onPress={() => setSelected(!isSelected)}
       />
       
+      {isLoading &&
+        <Text>Carregando...</Text>
+      }
+
       {!isLoading && 
         < Button
                 title="Salvar"
@@ -201,9 +206,7 @@ export default function Cadastro({navigation}) {
         />
       }
 
-        { visibleDialog && 
-          <CustomDialog titulo={titulo} mensagem={mensagem} tipo={tipo} visible={visibleDialog} onClose={hideDialog}></CustomDialog>
-        } 
+ 
       </ScrollView>
     </KeyboardAvoidingView>
   );
