@@ -1,10 +1,12 @@
 import React, {useState} from 'react';
-import {  View, KeyboardAvoidingView, Platform, StyleSheet  } from 'react-native';
+import {  View, KeyboardAvoidingView, Platform, StyleSheet, Alert  } from 'react-native';
 import { Text, Button } from 'react-native-elements';
 import { CheckBox } from 'react-native-elements/dist/checkbox/CheckBox';
 import { Input } from 'react-native-elements/dist/input/Input';
 import { ScrollView } from 'react-native-gesture-handler';
 import { TextInputMask } from 'react-native-masked-text';
+import { Button as PaperButton, Paragraph, Provider, Dialog, Portal } from 'react-native-paper';
+import CustomDialog from '../components/CustomDialog.js';
 
 import usuarioService  from '../services/UsuarioService.js'
 
@@ -39,7 +41,7 @@ export default function Cadastro({navigation}) {
     let cpfField = null
     let telefoneField = null
   
-    const showDialog = (titulo, mensagem, tipo) => {
+    const showDialog = ( titulo, mensagem, tipo ) => {
       setVisibleDialog(true)
       setTitulo(titulo)
       setMensagem(mensagem)
@@ -47,7 +49,7 @@ export default function Cadastro({navigation}) {
     }
   
     const hideDialog = (status) => {
-      setVisibleDialog(status)
+      setVisibleDialog(false)
     }
     
     const validar = () => {
@@ -65,7 +67,7 @@ export default function Cadastro({navigation}) {
         setErrorCpf("Preencha seu CPF corretamente")
         error = true
       }
-      if (telefone == null){
+      if (telefone == null || telefone == ""){
         setErrorTelefone("Preencha seu telefone corretamente")
         error = true
       }
@@ -93,12 +95,14 @@ export default function Cadastro({navigation}) {
             setLoading(false)
             const titulo = (response.data.status) ? "Sucesso" : "Erro"
 /*             console.log(titulo, response.data.mensagem, "SUCESSO") */
-            Alert.alert(titulo, response.data.mensagem)          
+            //Alert.alert(titulo, response.data.mensagem)          
+            showDialog(titulo, response.data.mensagem, "SUCESSO");
           })
           .catch((error) => {
             setLoading(false)
+            showDialog("Erro", "Houve um erro inesperado", "ERRO")
             /* console.log("Erro","Houve um erro inesperado", "ERRO") */
-            Alert.alert("Erro", "Houve um erro inesperado")
+            //Alert.alert("Erro", "Houve um erro inesperado")
           })
         }
     }
@@ -107,7 +111,7 @@ export default function Cadastro({navigation}) {
       <KeyboardAvoidingView
       behavior={Platform.OS == "ios" ? "padding" : "height"}
       style={[styles.container, specificStyle.specificContainer]}
-      keyboardVerticalOffset={80}>
+      keyboardVerticalOffset={20}>
         <ScrollView style={{width: "100%"}}>
         <Text h3>Cadastre-se</Text>
         <Input
@@ -171,6 +175,7 @@ export default function Cadastro({navigation}) {
           onChangeText={value => setSenha(value)}
           errorMessage={errorSenha}
           secureTextEntry={true}
+          keyboardType='default'
           />
               
       <CheckBox 
@@ -206,7 +211,12 @@ export default function Cadastro({navigation}) {
         />
       }
 
- 
+      { visibleDialog &&
+        <CustomDialog titulo={titulo}  mensagem={mensagem} tipo={tipo} visible={visibleDialog} onClose={hideDialog}></CustomDialog>
+      }
+
+     
+
       </ScrollView>
     </KeyboardAvoidingView>
   );

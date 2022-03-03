@@ -34,12 +34,12 @@ export default function Login({navigation}) {
         <Input placeholder=' E-mail' 
               keyboardType='email-address'
               leftIcon={{type: 'font-awesome', name: 'envelope'}}
-              onChengeText={value => setEmail(value)}
+              onChangeText={value => setEmail(value)}
         />
         <Input placeholder=' Senha' 
-              keyboardType='password'
+              keyboardType='default'
               leftIcon={{type: 'font-awesome', name: 'lock'}}
-              onChengeText={value => setPassword(value)}
+              onChangeText={value => setPassword(value)}
               secureTextEntry={true}
         />
         <Button
